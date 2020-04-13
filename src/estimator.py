@@ -19,14 +19,26 @@ app = Flask(__name__)
 #         "totalHospitalBeds": 678874
 # }
 
+
+
 @app.route('/api/v1/on-covid-19', methods=['POST'])
 def estimator():
   '''function for covid-19 estimator'''
   data = request.get_json()
   #Challenge 1
+  def period(type = data['periodType']):
+      '''fuction to address the periodType'''
+      actual_period = data['timeToElapse']
+      if type == "days":
+          return actual_period
+      elif type == "weeks":
+          return actual_period * 7
+      elif type == "months":
+          return actual_period * 30
+
   reportedCases = data["reportedCases"]
   totalHospitalBeds = data["totalHospitalBeds"]
-  timeToElapse = data["timeToElapse"]
+  timeToElapse = period()
   avgDailyIncomeInUSD = data["region"]["avgDailyIncomeInUSD"]
   avgDailyIncomePopulation = data["region"]["avgDailyIncomePopulation"]
     
@@ -73,6 +85,10 @@ def estimator():
                 "dollarsInFlight": severeImpactDollarsInFlight
                     },
            }
-    
-   return reportedCases
+  #response = Response("", 201, mimetype='application/json')
 
+  return jsonify(reportedCases)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+  
