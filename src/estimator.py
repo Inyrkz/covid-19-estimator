@@ -113,7 +113,7 @@ def header(format1):
   impactDollarsInFlight = third_challenge["impactDollarsInFlight"]
   severeImpactDollarsInFlight = third_challenge["severeImpactDollarsInFlight"]
 
-
+  #output file
   reportedCases = { "data": data,
             "impact": {
                 "currentlyInfected": impactCurrentlyInfected,
