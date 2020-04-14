@@ -1,8 +1,8 @@
 from flask import Flask, request, Response, jsonify
 import json
+from challenges import challenge1, challenge2, challenge3, period
 
 app = Flask(__name__)
-
 #Dummy data
 
 # data = {
@@ -19,52 +19,41 @@ app = Flask(__name__)
 #         "totalHospitalBeds": 678874
 # }
 
-
-
 @app.route('/api/v1/on-covid-19', methods=['POST'])
 def estimator():
   '''function for covid-19 estimator'''
   data = request.get_json()
-  #Challenge 1
-  def period(type = data['periodType']):
-      '''fuction to address the periodType'''
-      actual_period = data['timeToElapse']
-      if type == "days":
-          return actual_period
-      elif type == "weeks":
-          return actual_period * 7
-      elif type == "months":
-          return actual_period * 30
-
+  '''Defining variables from json input data'''
   reportedCases = data["reportedCases"]
   totalHospitalBeds = data["totalHospitalBeds"]
-  timeToElapse = period()
+  timeToElapse = period(data)
   avgDailyIncomeInUSD = data["region"]["avgDailyIncomeInUSD"]
   avgDailyIncomePopulation = data["region"]["avgDailyIncomePopulation"]
     
-  impactCurrentlyInfected = int(reportedCases * 10)
-  severeImpactCurrentlyInfected = int(reportedCases * 50)
-  
-  impactInfectionsByRequestedTime = int(impactCurrentlyInfected * (2**(timeToElapse//3)))
-  severeImpactInfectionsByRequestedTime = int(severeImpactCurrentlyInfected * (2**(timeToElapse//3)))
-  
-  #Challenge 2
-  impactSevereCasesByRequestedTime = int(15 / 100 * impactInfectionsByRequestedTime)
-  severeImpactSevereCasesByRequestedTime = int(15 / 100 * severeImpactInfectionsByRequestedTime)
-  
-  impactHospitalBedsByRequestedTime = int((35 / 100 * totalHospitalBeds) - impactSevereCasesByRequestedTime)
-  severeImpactHospitalBedsByRequestedTime = int((35 / 100 * totalHospitalBeds) - severeImpactSevereCasesByRequestedTime)
-  
-  #Challenge 3
-  impactcasesForICUByRequestedTime = int(5 / 100 * impactInfectionsByRequestedTime )
-  severeImpactcasesForICUByRequestedTime = int(5 / 100 * severeImpactInfectionsByRequestedTime)
-  
-  impactcasesForVentilatorsByRequestedTime = int(2 / 100 * impactInfectionsByRequestedTime )
-  severeImpactcasesForVentilatorsByRequestedTime = int(2 / 100 * severeImpactInfectionsByRequestedTime)
-  
-  impactDollarsInFlight = int(impactInfectionsByRequestedTime * avgDailyIncomePopulation * avgDailyIncomeInUSD * timeToElapse)
-  severeImpactDollarsInFlight = int(severeImpactInfectionsByRequestedTime * avgDailyIncomePopulation * avgDailyIncomeInUSD * timeToElapse)
-  
+  #Creating variables from the challenge1 function
+  first_challenge = challenge1(reportedCases, timeToElapse)
+  impactCurrentlyInfected = first_challenge["impactCurrentlyInfected"]
+  severeImpactCurrentlyInfected = first_challenge["severeImpactCurrentlyInfected"]
+  impactInfectionsByRequestedTime = first_challenge["impactInfectionsByRequestedTime"]
+  severeImpactInfectionsByRequestedTime = first_challenge["severeImpactInfectionsByRequestedTime"]
+           
+  #Creating variables from the challenge2 function           
+  second_challenge = challenge2(impactInfectionsByRequestedTime, severeImpactInfectionsByRequestedTime, totalHospitalBeds)
+  impactSevereCasesByRequestedTime = second_challenge["impactSevereCasesByRequestedTime"]
+  severeImpactSevereCasesByRequestedTime = second_challenge["severeImpactSevereCasesByRequestedTime"]
+  impactHospitalBedsByRequestedTime = second_challenge["impactHospitalBedsByRequestedTime"]
+  severeImpactHospitalBedsByRequestedTime = second_challenge["severeImpactHospitalBedsByRequestedTime"]
+
+  #Creating variables from the challenge3 function           
+  third_challenge = challenge3(impactInfectionsByRequestedTime, severeImpactInfectionsByRequestedTime, avgDailyIncomePopulation, avgDailyIncomeInUSD, timeToElapse)
+  impactcasesForICUByRequestedTime = third_challenge["impactcasesForICUByRequestedTime"]
+  severeImpactcasesForICUByRequestedTime = third_challenge["severeImpactcasesForICUByRequestedTime"]
+  impactcasesForVentilatorsByRequestedTime = third_challenge["impactcasesForVentilatorsByRequestedTime"]
+  severeImpactcasesForVentilatorsByRequestedTime = third_challenge["severeImpactcasesForVentilatorsByRequestedTime"]
+  impactDollarsInFlight = third_challenge["impactDollarsInFlight"]
+  severeImpactDollarsInFlight = third_challenge["severeImpactDollarsInFlight"]
+
+ 
   reportedCases = { "data": data,
             "impact": {
                 "currentlyInfected": impactCurrentlyInfected,
@@ -90,50 +79,41 @@ def estimator():
   return response
 
 
-@app.route('/api/v1/on-covid-19/<type>', methods=['POST'])
-def header(type):
+@app.route('/api/v1/on-covid-19/<format1>', methods=['POST'])
+def header(format1):
   '''function for covid-19 estimator'''
   data = request.get_json()
-  #Challenge 1
-  def period(type = data['periodType']):
-      '''fuction to address the periodType'''
-      actual_period = data['timeToElapse']
-      if type == "days":
-          return actual_period
-      elif type == "weeks":
-          return actual_period * 7
-      elif type == "months":
-          return actual_period * 30
-
+  #Defining variables from json data
   reportedCases = data["reportedCases"]
   totalHospitalBeds = data["totalHospitalBeds"]
-  timeToElapse = period()
+  timeToElapse = period(data)
   avgDailyIncomeInUSD = data["region"]["avgDailyIncomeInUSD"]
   avgDailyIncomePopulation = data["region"]["avgDailyIncomePopulation"]
     
-  impactCurrentlyInfected = int(reportedCases * 10)
-  severeImpactCurrentlyInfected = int(reportedCases * 50)
-  
-  impactInfectionsByRequestedTime = int(impactCurrentlyInfected * (2**(timeToElapse//3)))
-  severeImpactInfectionsByRequestedTime = int(severeImpactCurrentlyInfected * (2**(timeToElapse//3)))
-  
-  #Challenge 2
-  impactSevereCasesByRequestedTime = int(15 / 100 * impactInfectionsByRequestedTime)
-  severeImpactSevereCasesByRequestedTime = int(15 / 100 * severeImpactInfectionsByRequestedTime)
-  
-  impactHospitalBedsByRequestedTime = int((35 / 100 * totalHospitalBeds) - impactSevereCasesByRequestedTime)
-  severeImpactHospitalBedsByRequestedTime = int((35 / 100 * totalHospitalBeds) - severeImpactSevereCasesByRequestedTime)
-  
-  #Challenge 3
-  impactcasesForICUByRequestedTime = int(5 / 100 * impactInfectionsByRequestedTime )
-  severeImpactcasesForICUByRequestedTime = int(5 / 100 * severeImpactInfectionsByRequestedTime)
-  
-  impactcasesForVentilatorsByRequestedTime = int(2 / 100 * impactInfectionsByRequestedTime )
-  severeImpactcasesForVentilatorsByRequestedTime = int(2 / 100 * severeImpactInfectionsByRequestedTime)
-  
-  impactDollarsInFlight = int(impactInfectionsByRequestedTime * avgDailyIncomePopulation * avgDailyIncomeInUSD * timeToElapse)
-  severeImpactDollarsInFlight = int(severeImpactInfectionsByRequestedTime * avgDailyIncomePopulation * avgDailyIncomeInUSD * timeToElapse)
-  
+  #Creating variables from the challenge1 function
+  first_challenge = challenge1(reportedCases, timeToElapse)
+  impactCurrentlyInfected = first_challenge["impactCurrentlyInfected"]
+  severeImpactCurrentlyInfected = first_challenge["severeImpactCurrentlyInfected"]
+  impactInfectionsByRequestedTime = first_challenge["impactInfectionsByRequestedTime"]
+  severeImpactInfectionsByRequestedTime = first_challenge["severeImpactInfectionsByRequestedTime"]
+           
+  #Creating variables from the challenge2 function           
+  second_challenge = challenge2(impactInfectionsByRequestedTime, severeImpactInfectionsByRequestedTime, totalHospitalBeds)
+  impactSevereCasesByRequestedTime = second_challenge["impactSevereCasesByRequestedTime"]
+  severeImpactSevereCasesByRequestedTime = second_challenge["severeImpactSevereCasesByRequestedTime"]
+  impactHospitalBedsByRequestedTime = second_challenge["impactHospitalBedsByRequestedTime"]
+  severeImpactHospitalBedsByRequestedTime = second_challenge["severeImpactHospitalBedsByRequestedTime"]
+
+  #Creating variables from the challenge3 function           
+  third_challenge = challenge3(impactInfectionsByRequestedTime, severeImpactInfectionsByRequestedTime, avgDailyIncomePopulation, avgDailyIncomeInUSD, timeToElapse)
+  impactcasesForICUByRequestedTime = third_challenge["impactcasesForICUByRequestedTime"]
+  severeImpactcasesForICUByRequestedTime = third_challenge["severeImpactcasesForICUByRequestedTime"]
+  impactcasesForVentilatorsByRequestedTime = third_challenge["impactcasesForVentilatorsByRequestedTime"]
+  severeImpactcasesForVentilatorsByRequestedTime = third_challenge["severeImpactcasesForVentilatorsByRequestedTime"]
+  impactDollarsInFlight = third_challenge["impactDollarsInFlight"]
+  severeImpactDollarsInFlight = third_challenge["severeImpactDollarsInFlight"]
+
+
   reportedCases = { "data": data,
             "impact": {
                 "currentlyInfected": impactCurrentlyInfected,
@@ -156,14 +136,19 @@ def header(type):
            }
   
   #content type for output
-  if type == 'json' :
+  if format1 == 'json' :
     response = Response(json.dumps(reportedCases), status=201, mimetype='application/json')
     return response
-  elif type == 'xml':
+  elif format1 == 'xml':
     response = Response(json.dumps(reportedCases), status=201, mimetype='application/xml')
     return response
   else:
-    response = Response("invalid url", status=404, mimetype='application/json')
+    invalidBookObjectErrorMsg = {
+            "error": "Invalid URL",
+            "helpString": "URL should be similar to this '/api/v1/on-covid-19/json' or '/api/v1/on-covid-19/xml' "
+        }
+        
+    response = Response(json.dumps(invalidBookObjectErrorMsg), status=404, mimetype='application/json')
     return response
 
 if __name__ == "__main__":
