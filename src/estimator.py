@@ -151,6 +151,12 @@ def header(format1):
     response = Response(json.dumps(invalidBookObjectErrorMsg), status=404, mimetype='application/json')
     return response
 
+@app.route('/api/v1/on-covid-19/logs', methods=['POST'])
+def logs():
+  '''function to display request/response logs'''
+  pass
+
+
 if __name__ == "__main__":
     app.run(debug=True)
   
